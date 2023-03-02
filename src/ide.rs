@@ -1,11 +1,6 @@
-use std::{fmt::Display, io::stdin};
+use termion::event::Key;
 
-use termion::{
-    event::{Event, Key},
-    input::TermRead,
-};
-
-use crate::textarea::*;
+use crate::{document, textarea::*};
 pub struct IDE {
     text_area: TextArea,
     should_quit: bool,
@@ -25,9 +20,10 @@ impl IDE {
 
         match key {
             Key::Ctrl('q') => self.should_quit = true,
-            Key::Char('\n') => self.text_area.text_buf.push('\n'),
+            // Key::Char('\r') => self.text_area.text_buf.push('\n'),
             Key::Char(c) => {
-                self.text_area.text_buf.push(c);
+                self.text_area.insert_char(c);
+                self.text_area.move_cursor(Key::Right);
             }
             _ => {}
         }
