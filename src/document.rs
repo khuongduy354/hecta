@@ -1,26 +1,58 @@
-use std::io::{stdout, Write};
+use std::io::{stdout, Stdout, Write};
 
-use termion::terminal_size;
+use termion::{
+    event::Key,
+    raw::{IntoRawMode, RawTerminal},
+    terminal_size,
+};
 
-use crate::textarea::Position;
+pub struct Position {
+    pub x: usize,
+    pub y: usize,
+}
+impl Position {
+    pub fn new(x: usize, y: usize) -> Self {
+        Self { x, y }
+    }
+}
 
 pub struct Document {
+    pub cursor_pos: Position,
     rows: Vec<String>,
     width: u16,
+    _stdout: RawTerminal<Stdout>,
 }
 
 impl Document {
     pub fn new() -> Self {
+        let _stdout = stdout().into_raw_mode().unwrap();
+        let cursor_pos = Position { x: 1, y: 1 };
         let width = terminal_size().unwrap().0;
         let rows = vec![String::from("")];
-        Self { width, rows }
+        Self {
+            width,
+            rows,
+            cursor_pos,
+            _stdout,
+        }
     }
     pub fn draw_rows(&self) {
         for row in &self.rows {
             println!("{}\r", row);
         }
     }
-    pub fn insert_char(&mut self, c: char, cursor: &mut Position) {
+
+    pub fn move_cursor(&mut self, key: Key) {
+        match key {
+            Key::Up => self.cursor_pos.y -= 1,
+            Key::Down => self.cursor_pos.y += 1,
+            Key::Left => self.cursor_pos.x -= 1,
+            Key::Right => self.cursor_pos.x += 1,
+            _ => {}
+        }
+    }
+    pub fn insert_char(&mut self, c: char) {
+        let mut cursor = &mut self.cursor_pos;
         if c == '\n' {
             self.rows.push(String::from(""));
             cursor.y += 1;
@@ -51,8 +83,3 @@ impl Document {
         }
     }
 }
-
-//editing text
-//char push
-// eol new row( cursor position )
-// enter new row

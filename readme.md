@@ -1,6 +1,7 @@
 # Todo  
-- mouse position (moving around, when press enter) 
-- parse textarea into a better format for drawing (termion can get terminial width in characters) 
+- error handling 
+- mouse position (delete, backspace)
+<!-- - parse textarea into a better format for drawing (termion can get terminial width in characters)  -->
 - save load(clap)
 - vim integrate  
 

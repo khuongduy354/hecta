@@ -1,13 +1,9 @@
 mod document;
 mod ide;
-mod textarea;
+use ide::IDE;
 use std::io::{stdin, stdout, Write};
 
-use ide::IDE;
 use termion::{event::Key, input::TermRead, raw::IntoRawMode, terminal_size};
-// struct Document{
-//     text_buffer;
-// }
 fn mouse_cursor_ex() {
     let mut stdout = stdout().into_raw_mode().unwrap();
     write!(stdout, "{}", termion::clear::All,).unwrap();

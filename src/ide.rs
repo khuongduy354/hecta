@@ -1,32 +1,55 @@
-use termion::event::Key;
+use std::io::{self, stdout, Write};
 
-use crate::{document, textarea::*};
+use termion::{event::Key, input::TermRead};
+
+use crate::document::{self, Document, Position};
 pub struct IDE {
-    text_area: TextArea,
+    document: Document,
     should_quit: bool,
 }
 impl IDE {
     pub fn new() -> Self {
-        let text_area = TextArea::new();
+        let document = Document::new();
         let should_quit = false;
         Self {
-            text_area,
+            document,
             should_quit,
         }
     }
+    pub fn take_key() -> Key {
+        loop {
+            if let Some(key) = io::stdin().lock().keys().next() {
+                return key.unwrap();
+            }
+        }
+    }
     pub fn process_input(&mut self) {
-        let key = TextArea::process_input();
-        self.text_area.move_cursor(key);
+        let key = IDE::take_key();
+        self.document.move_cursor(key);
 
         match key {
             Key::Ctrl('q') => self.should_quit = true,
             // Key::Char('\r') => self.text_area.text_buf.push('\n'),
             Key::Char(c) => {
-                self.text_area.insert_char(c);
-                self.text_area.move_cursor(Key::Right);
+                self.document.insert_char(c);
+                self.document.move_cursor(Key::Right);
             }
             _ => {}
         }
+    }
+    pub fn refresh_screen(&self) {
+        // TextArea::cursor_hide();
+
+        write!(stdout(), "{}", termion::cursor::Goto(1, 1));
+
+        print!("{}", termion::clear::All,);
+        self.document.draw_rows();
+
+        let Position { x, y } = self.document.cursor_pos;
+        write!(stdout(), "{}", termion::cursor::Goto(x as u16, y as u16));
+        stdout().flush().unwrap();
+
+        // TextArea::cursor_show();
     }
     pub fn run(&mut self) {
         loop {
@@ -36,11 +59,10 @@ impl IDE {
             }
 
             //refresh
-            self.text_area.refresh_screen();
+            self.refresh_screen();
 
             //input
             self.process_input();
         }
     }
 }
-//implement display for key
