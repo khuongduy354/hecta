@@ -1,4 +1,4 @@
-use std::io::stdin;
+use std::{fmt::Display, io::stdin};
 
 use termion::{
     event::{Event, Key},
@@ -8,28 +8,43 @@ use termion::{
 use crate::textarea::*;
 pub struct IDE {
     text_area: TextArea,
+    should_quit: bool,
 }
 impl IDE {
     pub fn new() -> Self {
         let text_area = TextArea::new();
-        Self { text_area }
+        let should_quit = false;
+        Self {
+            text_area,
+            should_quit,
+        }
+    }
+    pub fn process_input(&mut self) {
+        let key = TextArea::process_input();
+        self.text_area.move_cursor(key);
+
+        match key {
+            Key::Ctrl('q') => self.should_quit = true,
+            Key::Char('\n') => self.text_area.text_buf.push('\n'),
+            Key::Char(c) => {
+                self.text_area.text_buf.push(c);
+            }
+            _ => {}
+        }
     }
     pub fn run(&mut self) {
-        let stdin = stdin();
-        for b in stdin.events() {
-            let evt = b.unwrap();
-            match evt {
-                Event::Key(Key::Ctrl('q')) => break,
-                Event::Key(Key::Char('\r')) => self.text_area.text_buf.push('\n'),
-                Event::Key(Key::Char(c)) => {
-                    self.text_area.text_buf.push(c);
-
-                    //TODO: structure this into a better Buffer
-                    TextArea::refresh_screen();
-                    self.text_area.draw_full();
-                }
-                _ => {}
+        loop {
+            //quit
+            if self.should_quit {
+                break;
             }
+
+            //refresh
+            self.text_area.refresh_screen();
+
+            //input
+            self.process_input();
         }
     }
 }
+//implement display for key
