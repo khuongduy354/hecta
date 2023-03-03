@@ -1,10 +1,16 @@
-use std::io::{stdout, Stdout, Write};
+use std::{
+    fmt::format,
+    io::{stdout, Stdout, Write},
+    ops::Index,
+};
 
 use termion::{
     event::Key,
     raw::{IntoRawMode, RawTerminal},
     terminal_size,
 };
+
+use crate::error::HectaError;
 
 pub struct Position {
     pub x: usize,
@@ -36,6 +42,19 @@ impl Document {
             _stdout,
         }
     }
+    pub fn get_row(&self, pos: usize) -> &String {
+        self.rows.get(pos).unwrap()
+    }
+    // pub fn get_row_mut(&mut self, pos: usize) -> &mut String {
+    //     self.rows.get_mut(pos).unwrap()
+    // }
+    // pub fn delete_char(key:Key) -> Result<(), HectaError> {
+    //     match key{
+    //         Key::Backspace=> ,
+    //          Key::Delete=>,
+    //     }
+    //
+    // }
     pub fn draw_rows(&self) {
         for row in &self.rows {
             println!("{}\r", row);
@@ -44,21 +63,80 @@ impl Document {
 
     pub fn move_cursor(&mut self, key: Key) {
         match key {
-            Key::Up => self.cursor_pos.y -= 1,
-            Key::Down => self.cursor_pos.y += 1,
-            Key::Left => self.cursor_pos.x -= 1,
-            Key::Right => self.cursor_pos.x += 1,
+            Key::Up => {
+                if self.cursor_pos.y == 1 {
+                    return;
+                }
+                self.cursor_pos.y -= 1;
+                if self.cursor_pos.x >= self.rows[self.cursor_pos.y - 1].len() {
+                    self.cursor_pos.x = 1
+                }
+            }
+            Key::Down => {
+                if self.cursor_pos.y == self.rows.len() {
+                    return;
+                }
+                self.cursor_pos.y += 1;
+
+                if self.cursor_pos.x >= self.rows[self.cursor_pos.y - 1].len() {
+                    self.cursor_pos.x = 1
+                }
+            }
+            Key::Left => {
+                if self.cursor_pos.x == 1 {
+                    return;
+                }
+                self.cursor_pos.x -= 1;
+            }
+            Key::Right => {
+                let row = self.get_row(self.cursor_pos.y - 1);
+                if self.cursor_pos.x == self.width as usize {
+                    return;
+                }
+                if self.cursor_pos.x > row.len() {
+                    return;
+                }
+                self.cursor_pos.x += 1;
+            }
             _ => {}
         }
     }
     pub fn insert_char(&mut self, c: char) {
-        let mut cursor = &mut self.cursor_pos;
+        //enter
         if c == '\n' {
-            self.rows.push(String::from(""));
-            cursor.y += 1;
-            cursor.x = 0;
+            // let current_row = self.get_row(self.cursor_pos.y - 1);
+            // if self.cursor_pos.x >= current_row.len() {
+            //     //new empty line
+            //     self.rows.push(String::from(""));
+            //     self.cursor_pos.y += 1;
+            //     self.cursor_pos.x = 0;
+            //     return;
+            // }
+            let y_idx = self.cursor_pos.y;
+            if y_idx == self.rows.len() {
+                self.rows.push(String::from(""));
+                // self.cursor_pos.y += 1;
+                // self.cursor_pos.x = 1;
+            }
+
+            //split remaining to newline
+            let current_row = self.rows[y_idx - 1].clone();
+            let splits = current_row.split_at(self.cursor_pos.x - 1);
+
+            self.rows[y_idx - 1] = splits.0.to_string();
+            self.rows.insert(y_idx, splits.1.to_string());
+
+            self.cursor_pos.y += 1;
+            self.cursor_pos.x = 1;
             return;
         }
+
+        //add to left of cursor
+        let row = &mut self.rows[self.cursor_pos.y - 1];
+        row.insert(self.cursor_pos.x - 1, c);
+        self.move_cursor(Key::Right);
+
+        // row.push(index);
 
         // 1st char => add to new row
         // if self.rows.len() == 0 {
@@ -67,19 +145,19 @@ impl Document {
         // }
 
         //get last row
-        let last_index = self.rows.len() - 1;
-        let last_row = self.rows.get(last_index);
+        // let last_index = self.rows.len() - 1;
+        // let last_row = self.rows.get(last_index);
 
         // end of line => new row
         // else add char to last row
-        if let Some(last_row) = last_row {
-            if last_row.len() == (self.width) as usize {
-                // print!("end of line");
-                self.rows.push(String::from(c));
-                cursor.y += 1;
-            } else {
-                self.rows.get_mut(last_index).unwrap().push(c);
-            }
-        }
+        // if let Some(last_row) = last_row {
+        //     if last_row.len() == (self.width) as usize {
+        //         // print!("end of line");
+        //         self.rows.push(String::from(c));
+        //         cursor.y += 1;
+        //     } else {
+        //         self.rows.get_mut(last_index).unwrap().push(c);
+        //     }
+        // }
     }
 }

@@ -1,4 +1,5 @@
 mod document;
+mod error;
 mod ide;
 use ide::IDE;
 use std::io::{stdin, stdout, Write};

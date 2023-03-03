@@ -32,7 +32,7 @@ impl IDE {
             // Key::Char('\r') => self.text_area.text_buf.push('\n'),
             Key::Char(c) => {
                 self.document.insert_char(c);
-                self.document.move_cursor(Key::Right);
+                // self.document.move_cursor(Key::Right);
             }
             _ => {}
         }
