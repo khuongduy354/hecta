@@ -42,6 +42,19 @@ impl Document {
             _stdout,
         }
     }
+    pub fn delete(&mut self) {
+        if self.rows[self.cursor_pos.y - 1].len() <= self.cursor_pos.x {
+            return;
+        }
+        self.rows[self.cursor_pos.y - 1].remove(self.cursor_pos.x); //remove the right char of cursor
+    }
+    pub fn backspace(&mut self) {
+        if self.cursor_pos.x == 1 {
+            return;
+        }
+        self.rows[self.cursor_pos.y - 1].remove(self.cursor_pos.x - 2); //remove the left char of cursor
+        self.cursor_pos.x -= 1;
+    }
     pub fn get_row(&self, pos: usize) -> &String {
         self.rows.get(pos).unwrap()
     }

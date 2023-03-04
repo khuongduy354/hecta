@@ -30,10 +30,17 @@ impl IDE {
         match key {
             Key::Ctrl('q') => self.should_quit = true,
             // Key::Char('\r') => self.text_area.text_buf.push('\n'),
+            Key::Delete => {
+                self.document.delete();
+            }
+            Key::Backspace => {
+                self.document.backspace();
+            }
             Key::Char(c) => {
                 self.document.insert_char(c);
                 // self.document.move_cursor(Key::Right);
             }
+
             _ => {}
         }
     }
