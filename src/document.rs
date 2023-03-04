@@ -6,7 +6,7 @@ use termion::{
     terminal_size,
 };
 
-use crate::error::HectaError;
+// use crate::error::HectaError;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Position {
@@ -50,17 +50,20 @@ impl Document {
     }
     // event_handler
     pub fn delete(&mut self) {
-        if self.rows[self.cursor_pos.y - 1].len() <= self.cursor_pos.x {
+        let cursor = self.cursor_pos;
+        let current_row = self.get_row(cursor.y - 1);
+        if current_row.len() < cursor.x {
             return;
         }
-        self.rows[self.cursor_pos.y - 1].remove(self.cursor_pos.x); //remove the right char of cursor
+        self.rows[self.cursor_pos.y - 1].remove(cursor.x - 1); //remove the right char of cursor
     }
     pub fn backspace(&mut self) {
-        if self.cursor_pos.x == 1 {
+        let cursor = self.cursor_pos;
+        if cursor.x == 1 {
             return;
         }
-        self.rows[self.cursor_pos.y - 1].remove(self.cursor_pos.x - 2); //remove the left char of cursor
-        self.cursor_pos.x -= 1;
+        self.rows[cursor.y - 1].remove(cursor.x - 2); //remove the left char of cursor
+        self.set_cursor(Position::new(cursor.x - 1, cursor.y));
     }
     pub fn insert_char(&mut self, c: char) {
         let cursor = self.cursor_pos;
@@ -94,7 +97,7 @@ impl Document {
     }
 
     // cursor  setter
-    pub fn set_cursor(&mut self, mut pos: Position) -> Result<(), HectaError> {
+    pub fn set_cursor(&mut self, mut pos: Position) {
         //limit moveable cursor position
 
         // 1 <= y <= document height
@@ -122,28 +125,25 @@ impl Document {
         }
 
         self.cursor_pos = pos;
-
-        Ok(())
     }
     //cursor handler
-    pub fn move_cursor(&mut self, key: Key) -> Result<(), HectaError> {
+    pub fn move_cursor(&mut self, key: Key) {
         let cursor = self.cursor_pos;
 
         match key {
             Key::Up => {
-                self.set_cursor(Position::new(cursor.x, cursor.y - 1))?;
+                self.set_cursor(Position::new(cursor.x, cursor.y - 1));
             }
             Key::Down => {
-                self.set_cursor(Position::new(cursor.x, cursor.y + 1))?;
+                self.set_cursor(Position::new(cursor.x, cursor.y + 1));
             }
             Key::Left => {
-                self.set_cursor(Position::new(cursor.x - 1, cursor.y))?;
+                self.set_cursor(Position::new(cursor.x - 1, cursor.y));
             }
             Key::Right => {
-                self.set_cursor(Position::new(cursor.x + 1, cursor.y))?;
+                self.set_cursor(Position::new(cursor.x + 1, cursor.y));
             }
             _ => {}
         }
-        Ok(())
     }
 }
