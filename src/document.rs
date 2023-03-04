@@ -64,6 +64,7 @@ impl Document {
     }
     pub fn insert_char(&mut self, c: char) {
         let cursor = self.cursor_pos;
+        let current_row = self.get_row(cursor.y - 1).to_string();
         //enter
         if c == '\n' {
             if cursor.y == self.rows.len() {
@@ -71,7 +72,6 @@ impl Document {
             }
 
             //split remaining to newline
-            let current_row = self.get_row(cursor.y - 1).to_string();
             let splits = current_row.split_at(self.cursor_pos.x - 1);
 
             self.rows[cursor.y - 1] = splits.0.to_string();
@@ -81,9 +81,16 @@ impl Document {
             return;
         }
 
-        //add to left of cursor
-        self.rows[cursor.y - 1].insert(cursor.x - 1, c);
-        self.set_cursor(Position::new(cursor.x + 1, cursor.y));
+        //next char reach width -> add char then push new row
+        if current_row.len() == (self.width - 1) as usize {
+            self.rows[cursor.y - 1].insert(cursor.x - 1, c);
+            self.rows.push(String::from(""));
+            self.set_cursor(Position::new(1, cursor.y + 1));
+        } else {
+            //add char
+            self.rows[cursor.y - 1].insert(cursor.x - 1, c);
+            self.set_cursor(Position::new(cursor.x + 1, cursor.y));
+        }
     }
 
     // cursor  setter
@@ -109,6 +116,7 @@ impl Document {
             pos.x = current_row.len() + 1;
         }
 
+        // line overflow
         if pos.x > self.width as usize {
             pos.x = self.width as usize;
         }
