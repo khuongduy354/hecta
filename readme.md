@@ -3,7 +3,7 @@
 <!-- - mouse position (delete, backspace) -->
 <!-- - parse textarea into a better format for drawing (termion can get terminial width in characters)  -->
 - save load(clap)
-- vim integrate  
+<!-- - vim integrate   -->
 
 - searching (check ripgrep libs)
 - markdown rendered    

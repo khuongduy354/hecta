@@ -1,23 +1,31 @@
-use std::io::{self, stdout, Write};
+use std::io::{self, stdout, Stdout, Write};
 
-use termion::{event::Key, input::TermRead};
+use termion::{
+    event::Key,
+    input::TermRead,
+    raw::{IntoRawMode, RawTerminal},
+};
 
 use crate::{
     document::{Document, Position},
     error::HectaError,
+    file_loader::{save_to_curr_dir, FileExtensions},
 };
 
 pub struct IDE {
     document: Document,
+    _stdout: RawTerminal<Stdout>,
     should_quit: bool,
 }
 
 impl IDE {
     pub fn new() -> Self {
+        let _stdout = stdout().into_raw_mode().unwrap();
         let document = Document::new();
         let should_quit = false;
         Self {
             document,
+            _stdout,
             should_quit,
         }
     }
@@ -42,6 +50,9 @@ impl IDE {
             }
             Key::Char(c) => {
                 self.document.insert_char(c);
+            }
+            Key::Ctrl('s') => {
+                save_to_curr_dir(FileExtensions::TXT, &self.document)?;
             }
 
             _ => {}

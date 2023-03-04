@@ -1,4 +1,7 @@
-use std::io::{stdout, Stdout};
+use std::{
+    io::{stdout, Stdout},
+    vec,
+};
 
 use termion::{
     event::Key,
@@ -18,25 +21,42 @@ impl Position {
         Position { x, y }
     }
 }
+impl From<String> for Document {
+    fn from(s: String) -> Self {
+        let cursor_pos = Position::new(1, 1);
+        let mut rows = vec![];
+        s.split('\n').for_each(|line| rows.push(line.to_string()));
+        let width = terminal_size().unwrap().0;
+
+        let title = "Untitled".to_string();
+        Self {
+            title,
+            cursor_pos,
+            rows,
+            width,
+        }
+    }
+}
 
 pub struct Document {
+    pub title: String,
     pub cursor_pos: Position,
-    rows: Vec<String>,
+    pub rows: Vec<String>,
     width: u16,
-    _stdout: RawTerminal<Stdout>,
 }
 
 impl Document {
+    pub fn load_from_string(self) {}
     pub fn new() -> Self {
-        let _stdout = stdout().into_raw_mode().unwrap();
         let cursor_pos = Position { x: 1, y: 1 };
         let width = terminal_size().unwrap().0;
+        let title = "Untitled".to_string();
         let rows = vec![String::from("")];
         Self {
             width,
+            title,
             rows,
             cursor_pos,
-            _stdout,
         }
     }
 
