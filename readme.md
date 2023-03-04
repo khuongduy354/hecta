@@ -2,8 +2,10 @@
 <!-- - error handling  -->
 <!-- - mouse position (delete, backspace) -->
 <!-- - parse textarea into a better format for drawing (termion can get terminial width in characters)  -->
-- save load(clap)
+<!-- - save load(clap) -->
 <!-- - vim integrate   -->
+
+- tests for load, save files 
 
 - searching (check ripgrep libs)
 - markdown rendered    

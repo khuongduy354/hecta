@@ -1,6 +1,10 @@
+mod cli;
 mod document;
 mod error;
+mod file_loader;
 mod ide;
+use cli::CliApp;
+use file_loader::{load_file_to_doc, save_to_curr_dir};
 use ide::IDE;
 use std::io::{stdin, stdout, Write};
 
@@ -40,6 +44,9 @@ fn term_size() {
 }
 
 fn main() {
+    let cliapp = CliApp::new();
+    // load_file_to_doc(cliapp.file_path.unwrap().to_str().unwrap());
+    // cliapp.args.path
     // mouse_cursor_ex();
     let mut ide = IDE::new();
     ide.run();
